@@ -1,30 +1,48 @@
 - en: Quantisation and co. Reducing inference times on LLMs by 80%
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 量化及其他：将LLMs的推理时间减少80%
 - en: 原文：[https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb](https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb](https://towardsdatascience.com/quantisation-and-co-reducing-inference-times-on-llms-by-80-671db9349bdb)
 - en: '[](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[![Christopher
     Karg](../Images/9d163d59e0c3167732f55d497caf9db2.png)](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
     [Christopher Karg](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[![Christopher
+    Karg](../Images/9d163d59e0c3167732f55d497caf9db2.png)](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
+    [Christopher Karg](https://medium.com/@christopher_karg?source=post_page-----671db9349bdb--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
     ·12 min read·Oct 27, 2023
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发布于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----671db9349bdb--------------------------------)
+    ·12分钟阅读·2023年10月27日
 - en: --
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/c44c0f469d07bf09ab4e359dd48265fe.png)'
+  id: totrans-5
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c44c0f469d07bf09ab4e359dd48265fe.png)'
 - en: 'Source: [https://www.pexels.com/photo/cropland-in-autumn-18684338/](https://www.pexels.com/photo/cropland-in-autumn-18684338/)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源：[https://www.pexels.com/photo/cropland-in-autumn-18684338/](https://www.pexels.com/photo/cropland-in-autumn-18684338/)
 - en: Quantisation is a technique used for a range of different algorithms but has
     gained prevalence with the fairly recent influx of Large Language Models (LLMs).
     In this article, I aim to provide information on the quantisation of LLMs and
@@ -36,23 +54,33 @@
     and the modern tools available to you for achieving your LLM goals on your machine.
     In a later article I plan to provide step-by-step instructions and code for fine-tuning
     your own LLM so keep an eye out for that.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化是一种用于多种算法的技术，但随着最近大型语言模型（LLMs）的涌现，这一技术变得越来越普及。在本文中，我旨在提供有关LLMs量化的信息，以及这一技术对在本地运行这些模型的影响。我将探讨量化之外的另一种策略，这可以进一步减少运行这些模型的计算需求。我将解释这些技术为何可能对你有兴趣，并展示一些带有代码示例的基准测试，以说明这些技术的有效性。我还简要介绍了硬件需求/建议以及实现LLM目标的现代工具。在后续文章中，我计划提供逐步说明和代码，用于微调你自己的LLM，请留意。
 - en: TL;DR — by quantising our LLM and changing the tensor *dtype*, we are able to
     run inference on an LLM with 2x the parameters whilst also reducing *Wall time*
     by 80%.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: TL;DR — 通过量化我们的LLM并更改张量*dtype*，我们能够在具有2倍参数的LLM上进行推理，同时将*Wall time*减少80%。
 - en: As always, if you wish to discuss anything I cover here please [reach out](http://www.linkedin.com/in/-christopherkarg).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 一如既往，如果你希望讨论我在这里提到的任何内容，请[联系我](http://www.linkedin.com/in/-christopherkarg)。
 - en: All opinions in this article are my own. This article is not sponsored.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中的所有观点均为我个人意见。本文未获得赞助。
 - en: What is quantisation (of LLMs)?
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 量化（LLMs的量化）是什么？
 - en: Quantisation allows us to reduce the size of our neural networks by converting
     the network’s weights and biases from their original floating-point format (e.g.
     32-bit) to a lower precision format (e.g. 8-bit). The original floating point
@@ -63,60 +91,86 @@
     you are attempting to quantise the models yourself. This largely comes down to
     lacking hardware support from particular vendors. Thankfully this can be bypassed
     through use of specific 3rd party services and software.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化使我们能够通过将网络的权重和偏差从原始的浮点格式（例如32位）转换为更低精度的格式（例如8位），来减少神经网络的大小。原始的浮点格式可以根据模型的架构和训练过程有所不同。量化的最终目的是减少模型的大小，从而减少内存和计算需求，以运行推理和训练模型。如果你尝试自己量化模型，量化过程可能会变得非常繁琐。这主要是因为某些供应商的硬件不支持。幸运的是，可以通过使用特定的第三方服务和软件来绕过这些限制。
 - en: Personally I have had to jump through a fair few hoops to quantise LLMs such
     as Meta’s Llama-2 on my Mac. This largely comes down to the lack of support for
     standard libs (or anything with custom CUDA kernels). 3rd party tools such as
     [optimum](https://github.com/huggingface/optimum) and [onnx](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
     do however exist to make our lives a little easier.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 就我个人而言，我在Mac上量化Meta的Llama-2等LLMs时遇到了不少麻烦。这主要是由于对标准库（或任何带有自定义CUDA内核的内容）的支持不足。不过，[optimum](https://github.com/huggingface/optimum)
+    和 [onnx](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)
+    等第三方工具确实存在，可以使我们的生活稍微轻松一些。
 - en: The quick and easy option is to download any of the pre-quantised models that
     are available on [HuggingFace](https://huggingface.co/) (HF). I specifically wish
     to shout-out [TheBloke](https://huggingface.co/TheBloke) for providing quantised
     versions of a whole host of popular LLMs including the LLama-2 models I’ll be
     demonstrating in this article. Instructions on how to run inference on each model
     can be found on the respective model cards.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 快速且简单的选项是下载[HuggingFace](https://huggingface.co/)（HF）上提供的任何预量化模型。我特别想提到[TheBloke](https://huggingface.co/TheBloke)，他们提供了许多流行LLMs的量化版本，包括本文中将演示的LLama-2模型。有关如何对每个模型进行推理的说明可以在各自的模型卡上找到。
 - en: 'If you want to run quantised models yourself and don’t have access to your
     own GPU, I’d suggest renting NVIDIA hardware on either of the following sites:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想自己运行量化模型但没有自己的GPU，我建议在以下网站租用NVIDIA硬件：
 - en: · [**Runpod.io**](https://www.runpod.io/)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: · [**Runpod.io**](https://www.runpod.io/)
 - en: · [**Lambdalabs.com**](https://lambdalabs.com/)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: · [**Lambdalabs.com**](https://lambdalabs.com/)
 - en: · [**Vast.ai**](https://vast.ai/)— DISCLAIMER — use at your own discretion.
     Here you are essentially renting a random person’s GPU. I’d suggest not sharing
     any sensitive information when using this service. It is however very cheap.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: · [**Vast.ai**](https://vast.ai/)— 免责声明 — 使用时请自行判断。这里实际上是租用随机人的GPU。建议在使用此服务时不要共享任何敏感信息。不过，它确实非常便宜。
 - en: If you wish to buy NVIDIA hardware and want the best bang for buck, I would
     suggest buying 2x used RTX3090’s. Whilst the newer RTX4090 has [better benchmark
     performance](https://technical.city/en/video/GeForce-RTX-3090-vs-GeForce-RTX-4090)
     , LLMs require high memory read/write speed rather than the higher speed of the
     processor. There is not a huge difference in memory read/write speed between the
     3090 and 4090 models so, in my opinion, the older model provides better value.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想购买NVIDIA硬件并希望获得最佳性价比，我建议购买2个二手RTX3090。虽然更新的RTX4090具有[更好的基准性能](https://technical.city/en/video/GeForce-RTX-3090-vs-GeForce-RTX-4090)，但大型语言模型（LLMs）更需要高内存读写速度，而不是更高的处理器速度。3090和4090型号在内存读写速度上差异不大，因此我认为较旧的型号提供了更好的价值。
 - en: If you have cash to spend, the sky is your limit.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你有预算，选择几乎没有限制。
 - en: 'As free options I’d suggest:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为免费的选项，我建议：
 - en: · [**Google colab**](https://colab.google/)— offer free GPUs at runtime with
     certain restrictions (RAM is also restricted in the free tier however you can
     pay for more)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: · [**Google colab**](https://colab.google/)— 在运行时提供免费的GPU，但有一定的限制（免费层的RAM也有限制，不过你可以付费获得更多）。
 - en: · [**Kaggle**](https://www.kaggle.com/) also offer GPUs within their notebooks.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: · [**Kaggle**](https://www.kaggle.com/) 也在他们的笔记本中提供GPU。
 - en: If you insist on using Mac hardware, my suggestion would be the M2 Ultra with
     as much RAM as you can afford (ideally 64GB+). This will still be slower than
     the above NVIDIA options but is definitely viable if you wish to just run inference
@@ -125,61 +179,91 @@
     Using this repo you can download and compile Meta’s llama 2 models in C++ and
     quantise them to 4-bit precision. We can then run inference on these models. The
     README of the repo gives clear instructions as to how you can do this.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你坚持使用Mac硬件，我建议使用M2 Ultra，并配备尽可能多的RAM（理想情况下为64GB以上）。这仍会比上述NVIDIA选项慢，但如果你只是希望在LLM上运行推理而不是训练自己的模型，这绝对是可行的。如果你在Mac硬件上量化自己的模型时遇到问题，我只能推荐[Georgi
+    Greganov的llama.cpp](https://github.com/ggerganov/llama.cpp)。使用这个repo，你可以下载并编译Meta的llama
+    2模型为C++并将其量化为4位精度。然后我们可以在这些模型上运行推理。该repo的README提供了清晰的操作说明。
 - en: So why on earth do we want to run/host our own LLMs locally?
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 那么，为什么我们要在本地运行/托管自己的LLM呢？
 - en: The short answer is, as always, it depends. As of writing this article, Openai’s
     GPT4 (available via ChatGPT) is widely [considered the best performing LLM available](https://paperswithcode.com/paper/gpt-4-technical-report-1).
     The pricing I would argue is also very reasonable and the model itself is no doubt
     easier interact with than using the strategies I alluded to above. The only dependencies
     you need to install are your account info and credit card number ;).
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 简短的答案是，一如既往，这取决于情况。撰写本文时，OpenAI的GPT4（通过ChatGPT提供）被广泛[认为是表现最好的LLM](https://paperswithcode.com/paper/gpt-4-technical-report-1)。我认为定价也非常合理，而且模型本身无疑比我上述提到的策略更容易互动。你唯一需要安装的依赖是你的账户信息和信用卡号码；）。
 - en: 'I do however believe a strong case can be made for running your own LLM locally:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我确实认为运行本地LLM有很强的理由：
 - en: '**Asking questions about proprietary documents/data.**'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '**询问关于专有文档/数据的问题。**'
 - en: You have the ability to fine-tune your own LLM using your own contexts and data.
     By doing this yourself you are not sharing any of this information 3rd parties
     which is a huge plus.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用自己的上下文和数据对LLM进行微调。通过自己进行这些操作，你不会将任何信息分享给第三方，这是一大优势。
 - en: '**Asking questions about topics after September 2021 knowledge cut-off** **(GPT4).**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**询问关于2021年9月知识截止后的主题** **（GPT4）**。'
 - en: I have seen some cases of GPT4 providing detail on topics after this time period,
     however the model frequently states the knowledge cut-off exists.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我看到了一些GPT4在此时间段之后提供详细信息的情况，但模型经常指出知识截止存在。
 - en: '**Fine-tune a model to solve problems that are specific to your scenario.**'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**对模型进行微调以解决特定于你场景的问题。**'
 - en: Again this links to the first point, you can tune your own LLM model to suit
     your needs.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次回到第一点，你可以调整自己的LLM模型以适应你的需求。
 - en: '**You get to see how these LLM’s work under the hood. You can inspect the model
     architecture and further develop your understanding of a technology that.**'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**你可以看到这些LLM的底层工作原理。你可以检查模型架构，并进一步发展你对技术的理解。**'
 - en: '**It’s free (provided you have your own hardware already and don’t count the
     electricity to run it)**'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**这很免费（前提是你已经有自己的硬件，并且不计算运行所需的电费）**'
 - en: Quantisation will ultimately aid you in running your own LLM locally by using
     less computational resources than if you were to run inference on the un-quantised
     model.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化最终将帮助你在本地运行LLM，使用比在未量化模型上运行推理时更少的计算资源。
 - en: Benchmark comparison Llama-2
+  id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基准比较Llama-2
 - en: I will now demonstrate the effect of quantisation on Meta’s Llama-2 7B and 13B
     models. I ran these experiments on a rented GPU as described above but have also
     tested them in a google colab notebook to confirm the results are reproducible.
@@ -188,62 +272,94 @@
     when running inference (which in my eyes already makes a perfect case for using
     quantisation when running LLMs!). Feel free to follow along though — the code
     examples are pulled directly from the free version of my colab notebook.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 我现在将演示量化对 Meta 的 Llama-2 7B 和 13B 模型的影响。我在租用的 GPU 上进行了这些实验，如上所述，但也在 Google Colab
+    笔记本中进行了测试，以确认结果是可重复的。我们唯一需要做的编辑是运行 7B 参数模型的 8 位量化版本作为我们在 Colab 笔记本中的基准，否则在运行推断时会超出内存限制（在我看来，这已经充分证明了在运行
+    LLMs 时使用量化的理由！）。不过可以跟着代码示例操作 — 这些代码示例直接来自于我的免费 Colab 笔记本版本。
 - en: If you are using the colab notebook — when installing dependencies such as *accelerate*
     and *bitsandbytes*, use regular pip installs within the notebook. Once installed,
     restart the runtime. Otherwise the packages will not be recognised. Also don’t
     forget to change your runtime to GPU by selecting runtime > change runtime type
     > T4 GPU.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你使用的是 colab 笔记本 — 当安装诸如*accelerate*和*bitsandbytes*等依赖项时，请在笔记本中使用常规的 pip 安装。安装完成后，重启运行时。否则，软件包将无法被识别。另外，不要忘记将运行时更改为
+    GPU，选择运行时 > 更改运行时类型 > T4 GPU。
 - en: 'I should add, a pre-requisite for this is to have been granted access to the
     models by Meta and HF. In order to do so you must first sign-up via a request
     form to Meta via this link :'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我应该补充说明，这一切的前提是你已经获得了 Meta 和 HF 的模型访问权限。为此，你必须首先通过此链接向 Meta 提交申请表：
 - en: '[https://ai.meta.com/resources/models-and-libraries/llama-downloads/](https://ai.meta.com/resources/models-and-libraries/llama-downloads/)'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://ai.meta.com/resources/models-and-libraries/llama-downloads/](https://ai.meta.com/resources/models-and-libraries/llama-downloads/)'
 - en: It can take anywhere from 2 minutes to 2 days to receive confirmation of access.
     Please note the email addresses you use for the Meta form and your HF account
     must match in order to use the models via the HF API.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 接受确认的时间可能从 2 分钟到 2 天不等。请注意，你用于 Meta 表单和 HF 账户的电子邮件地址必须匹配，以便通过 HF API 使用模型。
 - en: Once confirmation has been received, you can login to hugging face and start
     working with the models.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦确认已收到，你可以登录到 Hugging Face 并开始使用模型。
 - en: Let’s begin.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们开始吧。
 - en: Inference on Llama2–7B base with 8-bit quantisation.
+  id: totrans-45
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 8 位量化下对 Llama2–7B 基础模型进行推断。
 - en: Let’s first handle our imports — at this stage if you get any error messages
     just run the pip installs as needed — don’t forget to restart your runtime once
     installed (as above).
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先处理我们的导入 — 在此阶段，如果你遇到任何错误消息，请根据需要运行 pip 安装 — 安装完成后不要忘记重启你的运行时（如上所述）。
 - en: '[PRE0]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Next we copy the model name from hugging face so the API can download the relevant
     one. We also need to enter our HF access token. This can be found by selecting
     your profile in the top right of the HF site > Settings > Access Tokens > either
     generate a token or copy your existing one.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我们从 Hugging Face 复制模型名称，以便 API 可以下载相关模型。我们还需要输入我们的 HF 访问令牌。可以通过在 HF 网站的右上角选择你的个人资料
+    > 设置 > 访问令牌 > 生成令牌或复制现有令牌来找到它。
 - en: '[PRE1]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Now let’s download the model:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们下载模型：
 - en: '[PRE2]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Here we use the *device_map* argument to select the hardware we wish to use.
     In this case it selects the first GPU available. It is possible to load custom
     *device_maps* here but that falls outside the scope of this article. Note also
@@ -251,65 +367,96 @@
     the memory requirements of running inference. If you are looking to build bigger
     projects/products using LLMs, this simple technique can be useful for model deployment
     on devices with limited resources (edge devices or mobile phones etc.)
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里我们使用*device_map*参数来选择我们希望使用的硬件。在这种情况下，它选择了第一个可用的 GPU。这里可以加载自定义的*device_maps*，但这超出了本文的范围。还要注意*load_in_8bit*参数。这是我们为了减少推断运行时的内存需求而进行的量化步骤。如果你希望使用
+    LLMs 构建更大的项目/产品，这个简单的技术可以用于在资源有限的设备（边缘设备或手机等）上部署模型。
 - en: 'Next we set-up our tokeniser:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我们设置我们的分词器：
 - en: '[PRE3]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Enter whichever prompt you wish. The base model we are using is trained for
     text completion.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 输入你希望的提示。我们使用的基础模型经过了文本补全的训练。
 - en: Now let’s run inference on our tokenised prompt. Feel free to review the HF
     documentation if any of the syntax is new to you. Essentially we are unpacking
     the contents of our *toks* object and passing it to our GPU. The output is restricted
     to a maximum of 15 tokens (you can edit this parameter if you wish). The *model.generate()*
     method is used to generate our output using our Llama2 model. Once done, we transfer
     the output to CPU memory again so we can view our output.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们对标记化的提示进行推理。如果有任何语法对你来说是新的，请随意查看HF文档。本质上，我们正在解包*toks*对象的内容并将其传递给我们的GPU。输出限制为最多15个标记（如果愿意，可以编辑此参数）。*model.generate()*方法用于使用我们的Llama2模型生成输出。完成后，我们再次将输出传输到CPU内存中，以便查看我们的输出。
 - en: '[PRE4]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Let’s break down these timing metrics to better understand what we are seeing.
     The *CPU time* is broken down into 3 main components:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们分解这些时间指标，以更好地理解我们所看到的内容。*CPU时间*分解为三个主要组成部分：
 - en: 1\. *user* — this represents the time spent in user-mode code. Or in other words,
     the time spent it takes for the CPU to execute the python code. In this case it
     took 7.47 seconds. This metric is often also referred to as user time.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 1\. *user* — 这表示在用户模式代码中花费的时间。换句话说，就是CPU执行Python代码所需的时间。在这种情况下，花费了7.47秒。这个指标通常也被称为用户时间。
 - en: 2\. *sys* — this represents the amount of CPU time spent in system calls or
     kernel-mode code. It is the the time the CPU spends executing operating system-related
     tasks on behalf of our Python code. In our case it’s 1.17 seconds.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. *sys* — 这表示在系统调用或内核模式代码中花费的CPU时间。它是CPU执行操作系统相关任务的时间。在我们的案例中是1.17秒。
 - en: 3\. *total* — is the total of our user and sys times.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. *total* — 是用户时间和系统时间的总和。
 - en: Next is the *Wall time*. This refers to the amount of ‘real-world’ time it took
     to run our block of code.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来是*墙时间*。这指的是运行我们代码块所需的‘现实世界’时间。
 - en: The discrepancy between *CPU times* and *Wall time* (7.76 seconds) is due to
     the other memory intensive operations involved with running inference on our model.
     These include but are not limited to GPU memory transfers, scheduling, I/O operations
     etc.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '*CPU时间*和*墙时间*（7.76秒）之间的差异是由于运行模型推理时涉及的其他内存密集型操作。这些操作包括但不限于GPU内存传输、调度、I/O操作等。'
 - en: 'Let’s decode our result to see the output of the model:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们解码结果以查看模型的输出：
 - en: '[PRE5]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Awesome. We’ve successfully run inference on a base quantised LLM.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 太棒了。我们已经成功地在一个基础量化LLM上进行了推理。
 - en: A further technique we can use to speed up inference fairly drastically is to
     assign a different *dtype* to the tensors used within our Llama2 model during
     computation. Where we previously quantised the model’s parameters by using the
@@ -318,174 +465,268 @@
     is not considered a quantisation technique as it only changes the data type used
     by our model’s tensors, whereas the first involves quantisation by reducing the
     precision of the model’s parameters to 8-bits during loading.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以进一步使用的一种技术是将不同的*数据类型*分配给我们在计算过程中使用的Llama2模型中的张量。在之前，我们通过使用*load_in_8bit=True*参数来量化模型的参数，而现在我们将使用*torch_dtype=torch.bfloat16*参数，以减少模型在推理过程中的内存使用。这第二种方法不被认为是量化技术，因为它只改变了模型张量使用的数据类型，而第一种方法涉及通过在加载期间将模型参数的精度降低到8位来进行量化。
 - en: Both are considered effective techniques for reducing the computational requirements
     of running our LLMs. Let’s see just how effective the 2nd technique is.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两种方法被认为是减少运行我们的LLM的计算需求的有效技术。让我们看看第二种技术的有效性如何。
 - en: 'Let’s update our model with the new parameters:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们用新的参数更新我们的模型：
 - en: '[PRE6]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: At this stage colab may complain saying you have run out of memory. Simply restart
     the runtime by selecting Runtime > Restart runtime and re-run all relevant cells
     within the notebook.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 此阶段colab可能会提示内存不足。只需通过选择Runtime > Restart runtime来重启运行时，并重新运行笔记本中的所有相关单元格。
 - en: 'Now we run inference on our model with updated tensor *dtypes*:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们用更新后的张量*数据类型*在模型上运行推理：
 - en: '[PRE7]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'Wow. So by adjusting the tensor *dtypes,* we reduced our total CPU time by
     6.66 seconds. Our Wall time was reduced by ~71%. Let’s decode our output to see
     if we notice any impact of the changed *dtype*:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 哇。通过调整张量的*数据类型*，我们将总CPU时间减少了6.66秒。我们的墙时间减少了约71%。让我们解码输出，看看是否注意到任何*数据类型*的变化影响：
 - en: '[PRE8]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: There are a range of metrics and tests we can use to evaluate and compare the
     outputs of our model. In this article I will simply employ human evaluation. Both
     outputs are passable, coherent and relevant. Considering the 71% reduction in
     wall time in our 2nd example, I’d say our techniques so far were a success.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用各种指标和测试来评估和比较模型的输出。在这篇文章中，我将简单地采用人工评估。两个输出都合格、连贯且相关。考虑到在我们的第二个示例中墙上时间减少了71%，我认为我们目前的技术是成功的。
 - en: Let’s see how quickly we can run inference on a pre-quantised Llama2–7B model.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我们能多快在预量化的Llama2–7B模型上运行推理。
 - en: Inference on pre-quantised Llama2–7B with updated tensor dtypes.
+  id: totrans-78
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在具有更新张量数据类型的预量化Llama2–7B上进行推理。
 - en: Courtesy of [TheBloke](https://huggingface.co/TheBloke) we are able to access
     pre-quantised versions of Meta’s Llama-2 models. Details on the quantisation process
     can be found on the [model card](https://huggingface.co/TheBloke/Llama-2-7b-Chat-GPTQ)
     .
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 托[TheBloke](https://huggingface.co/TheBloke)的福，我们能够访问Meta的Llama-2模型的预量化版本。有关量化过程的详细信息可以在[模型卡](https://huggingface.co/TheBloke/Llama-2-7b-Chat-GPTQ)中找到。
 - en: We will use the same tensor *dtype* technique that provided us with the impressive
     reduction in wall time. This time with the pre-quantised model.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用相同的张量*数据类型*技术，这种技术使我们在墙上时间上取得了显著的减少。这次使用预量化模型。
 - en: 'Let’s update the model:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们更新模型：
 - en: '[PRE9]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The Q at the end of the name is indicative of the quantisation already performed
     on the model.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 名称末尾的Q表示模型已经完成了量化处理。
 - en: 'Now we download the model with the updated tensor *dtypes*:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们下载具有更新张量*数据类型*的模型：
 - en: '[PRE10]'
+  id: totrans-85
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Update the tokeniser:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 更新分词器：
 - en: '[PRE11]'
+  id: totrans-87
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Run inference:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行推理：
 - en: '[PRE12]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We’ve made even further improvements. As you can see, the total CPU times are
     reduced by ~14%. The wall time isreduced by ~8%.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们进一步进行了改进。正如你所见，总CPU时间减少了约14%。墙上时间减少了约8%。
 - en: 'Let’s check the output:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们检查输出：
 - en: '[PRE13]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Now it is fairly clear the final word has been trimmed due to our token limit
     being set to 15\. I confirm I increased the token limit and the final word evaluated
     to hobby. In terms of human validation I still give this a pass.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在很明显，由于我们的令牌限制设置为15，最终的词被裁剪了。我确认我增加了令牌限制，最终的词被评估为hobby。在人工验证方面，我仍然认为这是合格的。
 - en: Now let’s combine everything we’ve learned and run inference on the larger Llama-2–13B
     model. This model has almost 2x the number of parameters as those we’ve been testing
     earlier. We’ll benchmark the outcomes against the first model we trained (the
     base Llama-2–7B with 8-bit quantisation) and see how the two compare.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们结合我们学到的所有内容，并对更大的Llama-2–13B模型进行推理。该模型的参数数量几乎是我们之前测试的模型的2倍。我们将与我们训练的第一个模型（基础的Llama-2–7B，使用8位量化）进行基准测试，看看两者的比较情况。
 - en: Inference on pre-quantised Llama2–13B with updated tensor dtypes.
+  id: totrans-95
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在具有更新张量数据类型的预量化Llama2–13B上进行推理。
 - en: We’ll use all the same syntax but update the model name of course.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用相同的语法，但当然会更新模型名称。
 - en: '[PRE14]'
+  id: totrans-97
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'Download model with updated tensor *dtypes*:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 下载具有更新张量*数据类型*的模型：
 - en: '[PRE15]'
+  id: totrans-99
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'Update tokenizer:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 更新分词器：
 - en: '[PRE16]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'Run inference:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行推理：
 - en: '[PRE17]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'Let’s put this into context:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将其放入上下文中：
 - en: '![](../Images/8f5fc6baf18fce88c907b6bd95e07efa.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8f5fc6baf18fce88c907b6bd95e07efa.png)'
 - en: Inference times Meta-Llama-2–7B (8-bit quantisation) vs. Pre-quantised LLama-2–13B
     with float16 tensors
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 推理时间 Meta-Llama-2–7B（8位量化）与预量化的LLama-2–13B（使用float16张量）
 - en: We’ve almost doubled the number of parameters (from 7B to 13B). We’ve reduced
     the total CPU time by 81% and Wall time by 80%. I won’t lie I’m pretty happy with
     this outcome.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们几乎将参数数量翻倍（从7B增加到13B）。我们将总CPU时间减少了81%，墙上时间减少了80%。我不会撒谎，我对这个结果非常满意。
 - en: 'Let’s get the output:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们获取输出：
 - en: '[PRE18]'
+  id: totrans-109
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Not only have we considerably reduced inference times by reducing computational
     requirements, I would argue the output of the 13B model also is more coherent
     than the first 7B model on which we ran inference.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不仅通过减少计算需求大幅缩短了推理时间，而且我认为13B模型的输出也比我们运行推理的第一个7B模型更为连贯。
 - en: I hope this article shows you how effective these techniques are in drastically
     reducing inference times on these LLMs. In our first example, it wasn’t even possible
     to load the model in our notebook without first applying our own quantisation.
     Essentially by using these techniques, we are able to deploy a much larger LLM
     (number of parameters), decrease inference times by circa 80% and improve the
     output. If this isn’t a positive outcome I don’t know what is!
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章能向你展示这些技术在大幅度减少这些大语言模型（LLMs）推理时间方面的有效性。在我们的第一个例子中，甚至在没有应用我们自己的量化方法之前，模型是无法加载到笔记本中的。通过使用这些技术，我们能够部署一个更大的大语言模型（参数数量），将推理时间减少大约80%，并且改善输出。如果这还不是一个积极的结果，我不知道什么是了！
 - en: I’m happy to discuss and exchange ideas on any of the topics covered here.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 我很高兴讨论和交流这里涉及的任何话题。
 - en: '*All images belong to the author unless otherwise stated.*'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '*所有图片属于作者，除非另有说明。*'
