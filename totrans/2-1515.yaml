@@ -1,372 +1,554 @@
 - en: Metrics Store in Action
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 指标存储的实际应用
 - en: 原文：[https://towardsdatascience.com/metrics-store-in-action-76b16a928b97](https://towardsdatascience.com/metrics-store-in-action-76b16a928b97)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/metrics-store-in-action-76b16a928b97](https://towardsdatascience.com/metrics-store-in-action-76b16a928b97)
 - en: With a tutorial using MetricFlow, Python, DuckDB, dbt, and Streamlit
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 MetricFlow、Python、DuckDB、dbt 和 Streamlit 的教程
 - en: '[](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[![Paul
     Kinsvater](../Images/a117d2ba4ede758108ed76492e48a56a.png)](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
     [Paul Kinsvater](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[![Paul
+    Kinsvater](../Images/a117d2ba4ede758108ed76492e48a56a.png)](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
+    [Paul Kinsvater](https://medium.com/@paul.kinsvater?source=post_page-----76b16a928b97--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
     ·11 min read·Feb 23, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表于[Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b16a928b97--------------------------------)
+    ·阅读时间 11 分钟·2023年2月23日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '![](../Images/9ff87bf639bf82a3288b42575ba6a7c3.png)'
+  id: totrans-6
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ff87bf639bf82a3288b42575ba6a7c3.png)'
 - en: The metrics layer defines all critical business metrics and dimensions centrally.
     It translates metric requests into SQL, abstracting away implementation details.
     Image created by the author.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 指标层集中定义所有关键业务指标和维度。它将指标请求转换为 SQL，抽象化了实现细节。图片由作者创建。
 - en: There is a lot of literature on Modern Data Stacks (MDS)—most discussions are
     around storage, ingestion, transformation, and presentation. Today we focus on
     metrics, one of the many other [MDS categories](https://www.moderndatastack.xyz/categories).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于现代数据栈（MDS）的文献很多——大多数讨论围绕存储、摄取、转换和展示。今天我们聚焦于指标，这是许多其他[MDS 类别](https://www.moderndatastack.xyz/categories)中的一种。
 - en: Some say that metrics are one component of the semantic layer — see [this Airbyte
     blog post](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly).
     Others, as we do, use the terms “metrics store,” “metrics layer,” and “semantic
     layer” interchangeably.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人说指标是语义层的一个组成部分——请参阅[这篇 Airbyte 博客文章](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly)。而我们，如同其他人一样，将“指标存储”、“指标层”和“语义层”这些术语交替使用。
 - en: What is a metrics store, aka metric layer, aka semantic layer?
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 什么是指标存储，也称为指标层，也称为语义层？
 - en: “Last month’s revenue, as reported in the analyst’s notebook, is different from
     that in our dashboard. Which figure should we report to audit?”
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “上个月的收入，分析师的笔记本中报告的与我们仪表盘中的不同。我们应该向审计报告哪个数据？”
 - en: ''
+  id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: “Do you know how we define the Churn Rate KPI in our retention app?”
+  id: totrans-13
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “你知道我们在保留应用中如何定义流失率 KPI 吗？”
 - en: ''
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: “How do we segment our revenues from customer orders into geographic regions?”
     By customer billing location? By delivery location? Else?
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “我们如何将客户订单的收入按地理区域进行细分？”按客户账单地点？按交货地点？还是其他？
 - en: 'Such questions frequently pop up in the companies I have worked for. We all
     know why: different teams work in silos, implementing metrics with their preferred
     technology stack. Details are hidden in SQL procedures locked inside an access-restricted
     database, on some local Power BI files, or elsewhere we don’t know. A metrics
     store is here to help:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些问题经常出现在我曾工作的公司中。我们都知道原因：不同的团队在孤岛中工作，使用他们偏好的技术栈实现指标。细节隐藏在锁定访问的数据库中的 SQL 程序中，或者在一些本地
+    Power BI 文件中，或在我们不知道的其他地方。指标存储就是为了解决这个问题：
 - en: Single point of truth — a central code repository and knowledge database for
     metrics and dimensions.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 真实的单一来源——一个用于指标和维度的中央代码库和知识数据库。
 - en: Proxy to the data warehouse — all presentation tools (BI, reports, notebooks)
     request KPIs through one of the metrics store’s APIs.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 数据仓库的代理——所有的展示工具（BI、报告、笔记本）通过指标存储的一个 API 请求 KPI。
 - en: A metrics store also helps you with governance and caching. But this is out
     of the scope here.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 指标存储还帮助你进行治理和缓存。但这超出了这里的讨论范围。
 - en: Transformation layer vs. metric layer — where to draw the line?
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 转换层与指标层——如何划分界限？
 - en: 'The transformation layer is the “T” in ELT, and logic-wise, it comes 2nd right
     after ingesting raw data (the “EL”) into our storage. Like the metrics layer,
     the “T” step transforms the data before downstream applications consume it. You
     may ask, how are those two layers different then? Where does the responsibility
     of “T” end, and where that of the metrics store start? [Simon Späti brings it
     to the point](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly):'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 转换层是 ELT 中的 “T”，在逻辑上，它排在接收原始数据（“EL”）到我们的存储之后第二位。与度量层一样，“T”步骤在下游应用程序使用数据之前进行转换。你可能会问，这两层有什么不同？“T”的责任在哪里结束，度量存储的责任从哪里开始？[Simon
+    Späti 一针见血](https://airbyte.com/blog/the-rise-of-the-semantic-layer-metrics-on-the-fly)。
 - en: A semantic layer transforms/joins data at query time, whereas the transformation
     layer does during the transform (T) step of ETL/ELT, meaning it’s pre-calculated.
+  id: totrans-22
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 语义层在查询时转换/连接数据，而转换层在 ETL/ELT 的转换（T）步骤中进行，即在数据处理前已计算好。
 - en: 'Steps that the transformation layer should cover without doubt:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 转换层应无疑涵盖的步骤：
 - en: Reorganize and rename tables and columns by following a consistent style guide
     like [this one using dbt](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md).
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过遵循一致的风格指南（如[这个 dbt 风格指南](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md)），重新组织和重命名表格和列。
 - en: Clean up column data types, like timestamps.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 清理列数据类型，例如时间戳。
 - en: Add relevant columns, like margin = revenue minus cost.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 添加相关列，例如 margin = revenue minus cost。
 - en: Fix known data quality issues.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 修复已知的数据质量问题。
 - en: Whereas aggregations, like total monthly revenues, naturally fall under the
     responsibility of the metrics store.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 而汇总数据，如每月总收入，自然属于度量存储的责任。
 - en: Moving more transformation steps into the metrics store comes at the cost of
     added compute costs — far more than what we save in storage. So, you may want
     to keep some expensive or frequently requested calculations in the “T” step. This
     is also where a metrics store’s [materialization](https://docs.transform.co/docs/metricflow/reference/materializations/)
     and [caching](https://docs.transformdata.io/docs/metricflow/reference/concepts/caching)
     capabilities can help.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 将更多的转换步骤移到度量指标存储中会增加计算成本——远高于我们在存储方面节省的费用。因此，你可能需要将一些昂贵或经常请求的计算保留在“T”步骤中。这也是度量指标存储的[物化](https://docs.transform.co/docs/metricflow/reference/materializations/)和[缓存](https://docs.transformdata.io/docs/metricflow/reference/concepts/caching)功能可以帮助的地方。
 - en: Why MetricFlow by Transform Data
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么选择 Transform Data 的 MetricFlow
 - en: 'We chose [MetricFlow](https://docs.transform.co/docs/metricflow/guides/introduction)
     for three reasons:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们选择了[MetricFlow](https://docs.transform.co/docs/metricflow/guides/introduction)有三个原因：
 - en: It is open-source and comes with a friendly license.
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它是开源的，并且带有友好的许可证。
 - en: It is a Python package and fits nicely into the data stack we use below for
     the tutorial. And it is easy to configure.
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这是一个 Python 包，适合我们在教程中使用的数据栈。而且它容易配置。
 - en: '[dbt Labs will acquire the company behind MetricFlow](https://www.getdbt.com/blog/dbt-acquisition-transform/)
     — a strong indication that MetricFlow will thrive in the coming years.'
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[dbt Labs 将收购 MetricFlow 背后的公司](https://www.getdbt.com/blog/dbt-acquisition-transform/)——这强烈表明
+    MetricFlow 在未来几年将会蓬勃发展。'
 - en: Do you want to check what other tools compete in the semantic space? See [this
     overview](https://www.moderndatastack.xyz/companies/metrics-store) and read [this
     article](https://medium.com/@vfisa/an-overview-of-metric-layer-offerings-a9ddcffb446e).
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 想了解其他竞争语义空间的工具吗？请查看[这个概述](https://www.moderndatastack.xyz/companies/metrics-store)并阅读[这篇文章](https://medium.com/@vfisa/an-overview-of-metric-layer-offerings-a9ddcffb446e)。
 - en: Tutorial part 1 — set up a local environment.
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 教程第 1 部分——设置本地环境。
 - en: We use [DuckDB](https://duckdb.org/) for storage, [dbt](https://www.getdbt.com/)
     for the transformation layer, MetricFlow as our metrics store, and a [Streamlit](https://streamlit.io/)
     app for presentation. All four tools are Python packages and can be comfortably
     installed in a [Conda virtual environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用[DuckDB](https://duckdb.org/)进行存储，[dbt](https://www.getdbt.com/)进行转换层，MetricFlow
+    作为我们的度量指标存储，以及一个[Streamlit](https://streamlit.io/)应用程序用于展示。这四个工具都是 Python 包，可以舒适地安装在[Conda
+    虚拟环境](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)中。
 - en: 'But first, we need to install Postgres and MySQL, both dependencies of the
     MetricFlow package — even though we use DuckDB. On my Mac, I had to do the following:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 但首先，我们需要安装 Postgres 和 MySQL，虽然我们使用的是 DuckDB，这两者都是 MetricFlow 包的依赖项。在我的 Mac 上，我需要执行以下操作：
 - en: '[PRE0]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Next, clone [this](https://github.com/kinsvater/local-mds) GitHub repository,
     `cd` to the root, execute
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，克隆 [这个](https://github.com/kinsvater/local-mds) GitHub 仓库，`cd` 到根目录，执行
 - en: '[PRE1]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: and activate with `conda activate local-mds`.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 并激活 `conda activate local-mds`。
 - en: Tutorial part 2 — generate and explore raw data.
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 教程第 2 部分 — 生成和探索原始数据。
 - en: 'The following Python script generates synthetic data and ingests it into a
     local DuckDB database:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下 Python 脚本生成合成数据并将其导入本地 DuckDB 数据库：
 - en: '[PRE2]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'The “raw” data consists of four tables: accounts, sites, orders, and fx rates.
     A fictitious business with orders'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: “原始”数据包括四个表：accounts、sites、orders 和 fx rates。一个虚拟业务包含订单
 - en: '[PRE3]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: booked in different currencies with exchange rates
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 用不同货币预订的汇率
 - en: '[PRE4]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: and delivered to sites
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 并交付到网站
 - en: '[PRE5]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: owned by customers with accounts
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 由拥有账户的客户拥有
 - en: '[PRE6]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Tutorial part 3 — transform data with dbt.
+  id: totrans-54
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 教程第 3 部分 — 使用 dbt 转换数据。
 - en: Our git repository already comes with a dbt project called *data_mart.* Transforming
     data with dbt is as simple as writing SQL templates and placing them into the
     “models” directory `data_mart/models/`.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的 git 仓库已经包含了一个名为 *data_mart* 的 dbt 项目。使用 dbt 转换数据就像编写 SQL 模板并将其放入“models”目录
+    `data_mart/models/` 一样简单。
 - en: We follow [dbt’s style guide](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md).
     First, we create a “staging” schema in `models/staging/`. Every staging model
     mirrors raw data with simple renaming, casting, and nothing else. We transform
     the exchange rates by
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们遵循 [dbt 的风格指南](https://github.com/dbt-labs/corp/blob/main/dbt_style_guide.md)。首先，我们在
+    `models/staging/` 中创建一个“staging”模式。每个暂存模型都通过简单的重命名、转换和其他操作镜像原始数据。我们通过
 - en: '[PRE7]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: The three other staging tables follow a very similar logic.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他三个暂存表遵循非常类似的逻辑。
 - en: 'The staging layer is not supposed to be consumed by downstream applications
     directly. For this, we create our 2nd and final transformation layer, "marts.”
     We parse currency names into codes so that they match those from our orders:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 暂存层不应该被下游应用程序直接消费。为此，我们创建了第二层也是最终的转换层，“marts”。我们将货币名称解析为代码，以便它们与我们的订单中的代码匹配：
 - en: '[PRE8]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'And we use those rates to convert all order amounts to USD:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用这些汇率将所有订单金额转换为美元：
 - en: '[PRE9]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Note how we reference our final exchange rates table — this is where dbt shines!
     And also, note that we have to add a year column temporarily to join exchange
     rates on year and currency code.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意我们如何引用最终的汇率表 — 这正是 dbt 发挥作用的地方！同时，也请注意，我们需要临时添加一个年份列，以便根据年份和货币代码连接汇率。
 - en: 'The two other final tables are just 1-to-1 copies of staging, bringing our
     dbt modeling to the end. We finish our dbt exercise with three steps:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他两个最终表只是暂存表的 1 对 1 复制，这使我们的 dbt 建模完成。我们通过以下三个步骤完成 dbt 练习：
 - en: 'We materialize staging as views and the final layer as tables, as recommended
     in the dbt style guide. We can do this most comfortably through a change in the
     dbt project configuration file:'
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们将暂存物化为视图，将最终层物化为表，正如 dbt 风格指南中推荐的那样。我们可以通过更改 dbt 项目配置文件来最舒适地完成此操作：
 - en: '[PRE10]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '2\. We configure the connection to our database:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. 我们配置与数据库的连接：
 - en: '[PRE11]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '3\. Finally, we materialize all models as tables in our database on the command
     line:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. 最后，我们在命令行中将所有模型物化为数据库中的表：
 - en: '[PRE12]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We can verify this final step by querying any of the new tables. E.g.,
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过查询任何新表来验证这一步。比如，
 - en: '[PRE13]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Tutorial part 4 — metrics and dimensions
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 教程第 4 部分 — 指标和维度
 - en: Recall that the metrics store defines metrics and across which dimensions we
     can compute them. The dedicated place for this is in the directory `metrics/`
     in the root of our git repository.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾一下，指标存储定义了指标以及我们可以在哪些维度上计算这些指标。专门的地方在于我们 git 仓库根目录下的 `metrics/` 目录。
 - en: The two main objects in MetricFlow are data sources and metrics. And unlike
     with dbt, we configure those objects in YAML. It is then the responsibility of
     the metrics store to translate requests into SQL and execute them against our
     database.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: MetricFlow 中的两个主要对象是数据源和指标。与 dbt 不同的是，我们在 YAML 中配置这些对象。然后，由指标存储负责将请求转换为 SQL
+    并在我们的数据库中执行它们。
 - en: 'Let’s start with the specification of metrics first. We have defined two in
     the same YAML file:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先从指标的规范开始。我们在同一个 YAML 文件中定义了两个：
 - en: '[PRE14]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'MetricFlow gives us a couple of different ways to define a metric by choosing
     one of several [types](https://docs.transform.co/docs/metricflow/reference/metrics/).
     Type **measure_proxy** takes any defined measure and applies its default aggregation
     strategy. Type **expr** allows us to use SQL syntax. We define measures and aggregation
     strategies in data sources. Here is our specification for source **orders**:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE15]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: We can aggregate measures across every dimension specified in the corresponding
     section. And by using the specified foreign key identifiers, we can even do so
     using dimensions from other data sources.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: One of the “identifiers” points to a foreign data source, which is
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE16]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: With this, we can compute order measures across site regions. And since sites
     are linked to accounts through another foreign key specification, we can even
     compute order measures across site customer dimensions.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
 - en: The point about using YAML is its simplicity. You don’t need in-depth engineering
     experience to understand the specifications. Next time the business asks you how
     exactly a given metric is defined, point them to the corresponding specification
     in the YAML.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: 'Finally, we need to [connect MetricFlow to our database](https://docs.transform.co/docs/deployment/install-deploy):'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE17]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'You can verify the connection by executing on your command line:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE18]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Tutorial part 5 — MetricFlow APIs in action
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -376,53 +558,71 @@
     works only if our metrics store integrates well with our data stack. Does our
     BI app engine know how to communicate with MetricFlow? This will be true for some
     and wrong for many others.'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: Like with many other MDS categories, *integration* with your current stack will
     drive your decision for a metrics store solution against others. Below we use
     MetricFlow’s CLI and Python interfaces. And the latter works for any BI tool which
     talks Python, like Streamlit.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: 'We start with our first example on the command line:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE19]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: We used one of the two configured metrics and added time as the only dimension.
     Note how MetricFlow allows us to switch to annual granularity by a simple append
     of **__year**. [See the docs for other options](https://docs.transform.co/docs/metricflow/reference/data-sources/dimensions#time-dimensions).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: 'The 2nd example adds complexity by using a 2nd metric and a 2nd dimension from
     the foreign key relation:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE20]'
+  id: totrans-96
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: 'Next, we start our Streamlit app with the following command:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE21]'
+  id: totrans-98
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: '![](../Images/37c5103d5fa1981f276688acce2d70a9.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
 - en: 'In the implementation details of the app, you will find how the backend extracts
     the data before it is displayed:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE22]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: It’s again MetricFlow which does the heavy lifting under the hood. And it will
     be the same data, no matter which MetricFlow API we choose.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
 - en: Conclusion
+  id: totrans-103
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -430,28 +630,38 @@
     show up as different numbers on different apps? On the other hand, it is annoying
     if there is no consensus about something fundamental like the last quarter''s
     total revenue. So, what went wrong? Here are some examples from my personal experience:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否也厌倦了讨论为什么在不同的应用程序中“相同”维度上的“相同” KPI 显示不同的数字？另一方面，如果对像上个季度总收入这样基本的事情没有共识，也是很烦人的。那么，哪里出了问题？以下是我个人经验中的一些例子：
 - en: The sales department assigns a revenue record to a quarter by “date closed,”
     whereas the financial department does it by “date booked.”
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 销售部门通过“关闭日期”将收入记录分配到一个季度，而财务部门则通过“记账日期”来分配。
 - en: Some revenue records need to be removed before the aggregation because, e.g.,
     they are linked to cancellations. Such rules can be more complex than filtering
     by a single boolean “IsValid” column. Sometimes there is no consensus between
     different business units. Different rules are applied below the radar.
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在聚合之前，需要删除一些收入记录，例如，因为它们与取消相关。这些规则可能比通过单个布尔“IsValid”列进行过滤更复杂。有时，不同的业务单元之间没有达成共识。不同的规则在雷达下被应用。
 - en: We have transactions in different currencies. And there is no consensus on which
     exchange rate to apply for every point in time.
+  id: totrans-107
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们有不同货币的交易。对于每个时间点，应用哪个汇率也没有共识。
 - en: 'There is only one way we can avoid these pitfalls: stop implementing transformation
     pipelines in silos. Instead, use a single data model and a single place to define
     metrics and dimensions. Do sales and finance both need their own revenue KPI?
     Create both, and put them into the metrics store so everyone can explain the difference.'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 避免这些陷阱的唯一方法是：停止在孤立环境中实施转型管道。相反，使用单一的数据模型和一个地方来定义指标和维度。销售和财务是否都需要自己的收入 KPI？创建两个，并将它们放入指标库中，以便每个人都能解释差异。
