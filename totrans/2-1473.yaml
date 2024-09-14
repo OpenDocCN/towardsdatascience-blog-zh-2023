@@ -115,24 +115,29 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们讨论速度优化之前，先来看一下模型的输入和输出，以及它是如何进行预测的。
 - en: Model input and output shapes
   id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型输入和输出形状
 - en: '![](../Images/48537d9d15553ca7beda4b1b64bbf528.png)'
   id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/48537d9d15553ca7beda4b1b64bbf528.png)'
 - en: Model input and output, by author
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型输入和输出，由作者提供
 - en: The input is a 3D numpy array representing a chest CT scan.
   id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 输入是一个表示胸部CT扫描的3D numpy数组。
 - en: The SwinUNETR model couldn’t hold the whole image; it’s too big. A solution
     is to cut the image into smaller chunks, called Region of Interest (ROIs). In
     my setup, a region of interest is sized 96×96×96.
@@ -140,6 +145,7 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SwinUNETR模型无法处理整个图像，因为它太大了。一个解决方案是将图像切割成较小的块，称为感兴趣区域（ROIs）。在我的设置中，感兴趣区域的大小为96×96×96。
 - en: The SwinUNETR model sees a single region of interest at a time, outputs two
     binary segmentation masks, one for the tumour class and the other for the background
     class. Both masks are of the region of interest size, so 96×96×96\. More precisely,
@@ -150,6 +156,7 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SwinUNETR模型一次只看到一个感兴趣区域，输出两个二值分割掩码，一个用于肿瘤类别，另一个用于背景类别。这两个掩码的大小都是感兴趣区域的大小，即96×96×96。更准确地说，SwinUNETR输出两个未归一化的类别概率掩码。在后续步骤中，这些未归一化的掩码通过*softmax*归一化为0到1之间的概率，然后通过*argmax*转化为二值掩码。
 - en: These masks are merged according to how the corresponding regions of interest
     are cut to deliver two full size segmentation masks — the tumour mask and the
     background mask — each mask has the size of the whole chest CT scan. Note that
@@ -159,34 +166,41 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这些掩码根据对应感兴趣区域的切割方式进行合并，以生成两个全尺寸的分割掩码——肿瘤掩码和背景掩码——每个掩码的大小与整个胸部CT扫描相同。请注意，尽管模型返回了两个分割掩码，但我们只关注肿瘤掩码，会忽略背景掩码。
 - en: The input and output arrays, and the model, uses 32 bit floats.
   id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 输入和输出数组，以及模型，使用的是32位浮点数。
 - en: Sliding window inference
   id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 滑动窗口推断
 - en: The following pseudo code implements the above prediction idea.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下伪代码实现了上述预测思路。
 - en: '![](../Images/18531397de70df9796e605ac3f62ad42.png)'
   id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/18531397de70df9796e605ac3f62ad42.png)'
 - en: Sliding window inference, image by author
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 滑动窗口推断，作者提供的图像
 - en: Note code snippets in this article are pseudo code to keeps them succinct. Following
     the same argument, methods whose implementation is obvious, such as *split_image*,
     are left to your imagination.
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意本文中的代码片段是伪代码，以保持简洁。根据相同的逻辑，像*split_image*这样的实现显而易见的方法留给读者自行实现。
 - en: The *sliding_window_inference* method accepts the full CT scan *image* and a
     PyTorch *model*. It also accepts a *batch_size* because a region of interest is
     small, and a GPU can hold multiple of them at a time for prediction. *batch_size*
@@ -196,6 +210,7 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*sliding_window_inference*方法接受完整的CT扫描*image*和一个PyTorch *model*。它还接受一个*batch_size*，因为一个感兴趣区域很小，GPU可以同时处理多个区域进行预测。*batch_size*指定了发送到GPU的感兴趣区域的数量。*sliding_window_inference*返回二值肿瘤分割和背景掩码。'
 - en: The method first splits the whole image into regions of interest and then groups
     them into *batches* with each group containing *batch_size* regions of interest.
     Here I assume the number of regions of interest is dividable by *batch_size* for
@@ -204,37 +219,44 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 该方法首先将整个图像划分为感兴趣区域，然后将这些区域分组为*batch*，每组包含*batch_size*个感兴趣区域。在这里，我假设感兴趣区域的数量可以被*batch_size*整除，以简化代码。
 - en: Each *batch* is sent to the *model* to make a batch of predictions. Each prediction
     is for a single region of interest.
   id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个*batch*会被发送到*model*以生成一批预测结果。每个预测结果对应一个单独的感兴趣区域。
 - en: Finally predictions for all regions of interest are merged to form two full
     sized segmentation masks. The merging also includes *softmax* and *argmax*.
   id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最终，所有感兴趣区域的预测结果被合并形成两个全尺寸的分割掩码。合并过程还包括*softmax*和*argmax*。
 - en: Snippet to make prediction for an image
   id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对图像进行预测的代码片段
 - en: 'The following snippets calls the *sliding_window_inference* method to make
     a prediction for an image file loaded into the the first GPU “cuda:0” as a PyTorch
     tensor:'
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码片段调用了*sliding_window_inference*方法，以对加载到第一个GPU “cuda:0” 的图像文件进行预测，图像作为PyTorch张量：
 - en: '![](../Images/a60ac783a75437bfa02bdf1dff114420.png)'
   id: totrans-37
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a60ac783a75437bfa02bdf1dff114420.png)'
 - en: Snippets to invoke model prediction, by author
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 调用模型预测的代码片段，由作者提供
 - en: With the above setup, I now introduce a set of tactics to make the model predict
     faster.
   id: totrans-39
@@ -544,31 +566,37 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 原始模型首先在传入的感兴趣区域上调用，以获取两个分割类别的预测。输出形状为Batch×2×Width×Height×Depth，因为在当前的肿瘤分割任务中，有两个类别——肿瘤和背景。结果存储在*out*变量中。
 - en: Then *softmax* is applied to the two unnormalized segmentation masks to turn
     them into normalized probabilities between 0 and 1.
   id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后对两个未归一化的分割掩码应用*softmax*，将它们转换为介于0和1之间的归一化概率。
 - en: Then only the tumour class, that is, class 1, is selected to return to the caller.
   id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后仅选择肿瘤类别，即类别1，返回给调用者。
 - en: 'So, actually, this wrapper implements two optimizations:'
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，这个封装器实现了两个优化：
 - en: only returns a single segmentation mask, instead of two.
   id: totrans-89
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 仅返回一个分割掩码，而不是两个。
 - en: moves the *softmax* operation from CPU into GPU.
   id: totrans-90
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将*softmax*操作从CPU移到GPU中。
 - en: What about the *argmax* operation? Since only one segmentation mask is returned,
     there is no need for *argmax.* Instead, to create the original binary segmentation
     mask, we will do *tumour_segmentation_probability ≥ 0.5*, with *tumour_segmentation_probability*
@@ -576,43 +604,53 @@
   id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么*argmax*操作呢？由于只返回一个分割掩码，所以不需要*argmax*。相反，为了创建原始的二进制分割掩码，我们将进行*tumour_segmentation_probability
+    ≥ 0.5*，其中*tumour_segmentation_probability*是SwinWrapper中的*forward*方法的结果。
 - en: Since SwinWrapper is a PyTorch model, we need to do the PyTorch to ONNX, and
     ONNX to TensorRT conversion steps again.
   id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于SwinWrapper是一个PyTorch模型，我们需要再次进行PyTorch到ONNX和ONNX到TensorRT的转换步骤。
 - en: 'When converting the SwinWapper model to an ONNX model, it only change needed
     is to use wrapped model:'
   id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 在将SwinWapper模型转换为ONNX模型时，唯一需要更改的是使用封装模型：
 - en: '![](../Images/92fe03e45b2eec9f1413d361f917f822.png)'
   id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/92fe03e45b2eec9f1413d361f917f822.png)'
 - en: Converting wrapped SwinUNETR model to ONNX, by author
   id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 将封装的SwinUNETR模型转换为ONNX，由作者提供
 - en: And the *trtexec* command line to convert an ONNX model to a TensorRT plan stay
     unchanged. So I won’t repeat it here.
   id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 将ONNX模型转换为TensorRT计划的*trtexec*命令行保持不变，所以我不会在这里重复。
 - en: This tactic reduced the prediction time from 2.89 second to **2.42 second**.
   id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个策略将预测时间从2.89秒减少到**2.42秒**。
 - en: 'Tactic 4: distributing regions of interest to multiple GPUs'
   id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 策略4：将感兴趣区域分配到多个GPU
 - en: All the above tactics uses only one GPU, but sometimes we want to use a more
     expensive multiple GPUs machine to deliver even faster predictions.
   id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 以上所有策略仅使用一个GPU，但有时我们希望使用更昂贵的多GPU机器以实现更快的预测。
 - en: The idea is to load the same TensorRT model into *n* GPUs, and inside *sliding_window_inference*,
     we further split a batch of ROIs to *n* parts, and send each part to a different
     GPU. This way, the time-consuming forward pass of the SwinWrapper network can
@@ -620,35 +658,42 @@
   id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 其思路是将相同的TensorRT模型加载到*n*个GPU中，在*sliding_window_inference*中，我们进一步将一批ROIs分割为*n*个部分，并将每部分发送到不同的GPU。这种方式下，SwinWrapper网络的耗时前向传递可以并行处理不同部分。
 - en: 'We need to change the *sliding_window_inference* method into the following
     *sliding_window_inference_multi_gpu*:'
   id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要将*sliding_window_inference*方法改为以下的*sliding_window_inference_multi_gpu*：
 - en: '![](../Images/942a38c35422ec4e60f95b4ab53d8ef7.png)'
   id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/942a38c35422ec4e60f95b4ab53d8ef7.png)'
 - en: Multiple GPU sliding window inference, by author
   id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 多GPU滑动窗口推断，由作者提供
 - en: Same as before, we group regions of interest in different batches.
   id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 和之前一样，我们将感兴趣区域分成不同的批次。
 - en: We split each batch into parts, depending on how many GPUs are given.
   id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们根据提供的GPU数量将每个批次拆分成多个部分。
 - en: For each part *batch_per_gpu*, we submit a task to into a ThreadPoolExecutor.
     The task performs model inference on the passed-in part.
   id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于每个部分*batch_per_gpu*，我们将任务提交到ThreadPoolExecutor中。该任务对传入的部分执行模型推断。
 - en: The *submit* method returns immediately with a future object, representing the
     result of the task when it finishes. It is crucial for the *submit* method to
     return immediately before the task finishes, so we can post other tasks to different
@@ -657,41 +702,49 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*submit*方法立即返回一个future对象，表示任务完成时的结果。*submit*方法在任务完成前立即返回是至关重要的，这样我们可以在不等待的情况下将其他任务提交到不同的线程，实现并行处理。'
 - en: After all tasks submittedin the inner *for loop*, wait for all future objects
     to complete.
   id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在内层*for循环*中提交所有任务后，等待所有future对象完成。
 - en: After the tasks’ completion, read results from the futures and merge results.
   id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在任务完成后，从期望中读取结果并合并结果。
 - en: 'To invoke this new version of *sliding_window_inference_multi_gpu*, use the
     following snippet:'
   id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 要调用这个新版本的*sliding_window_inference_multi_gpu*，请使用以下代码片段：
 - en: '![](../Images/8b12d02411051657b2bff4b34aecd886.png)'
   id: totrans-111
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8b12d02411051657b2bff4b34aecd886.png)'
 - en: Model prediction with multiple GPUs, by author
   id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用多个GPU进行模型预测，作者
 - en: Here I used two GPUs, so I created two TensorRT models, each into a different
     GPU, “cuda:0” and “cuda:1”.
   id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我使用了两个GPU，因此我创建了两个TensorRT模型，每个模型分别放在不同的GPU上，“cuda:0”和“cuda:1”。
 - en: Then I created a ThreadPoolExecutor with two threads.
   id: totrans-114
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后我创建了一个包含两个线程的ThreadPoolExecutor。
 - en: I passed the models and the executor into the *sliding_window_inference_multi_gpu*
     method, similar to the case of a single GPU, to get the tumour class segmentation
     mask.
@@ -699,59 +752,71 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我将模型和执行器传递给*sliding_window_inference_multi_gpu*方法，类似于单GPU的情况，以获得肿瘤类别分割掩码。
 - en: This tactic reduces the prediction time from 2.42 second to **1.38 second**!
   id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个策略将预测时间从2.42秒减少到**1.38秒**！
 - en: Now we have four tactics that improved the prediction speed of the SwinUNETR
     model by 9 times. That’s not too bad. But are we sacrificing prediction precision
     for speed?
   id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有四种策略，将SwinUNETR模型的预测速度提高了9倍。还不错。但我们是否为了速度牺牲了预测精度？
 - en: Are we sacrificing prediction precision for speed?
   id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 我们是否为了速度牺牲了预测精度？
 - en: Note here the word “precision” means how well the final model segment tumours,
     it does not mean the floating point prediction, for example, 16bit, 32bit precision.
   id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里“精度”一词指的是最终模型对肿瘤的分割效果，而不是浮点预测精度，例如16位、32位精度。
 - en: To answer this question, we need to look at the DICE metric that measures the
     performance of a segmentation model.
   id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了回答这个问题，我们需要查看DICE指标，这个指标用于衡量分割模型的性能。
 - en: 'A DICE score is calculated as the proportion of overlapping between the predicted
     tumour and the ground truth tumour. DICE score is between 0 and 1; a larger DICE
     score means a better model prediction:'
   id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: DICE分数是通过预测的肿瘤与实际肿瘤重叠的比例来计算的。DICE分数介于0和1之间；分数越高，模型预测越好：
 - en: DICE 1 is perfect prediction,
   id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: DICE 1表示完美预测，
 - en: DICE 0 is completely wrong prediction, or no prediction at all.
   id: totrans-123
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: DICE 0表示完全错误的预测，或者根本没有预测。
 - en: 'Let’s look at the DICE score for a test image:'
   id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看测试图像的DICE分数：
 - en: '![](../Images/3619d69241e9d1feed45b76533760191.png)'
   id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3619d69241e9d1feed45b76533760191.png)'
 - en: Dice score achieved by different tactics, by author
   id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同策略下的Dice分数，作者
 - en: We can see that only when we turned a 32bit PyTorch model to a 16bit model in
     tactic 1, the DICE score slightly decreased from 0.93 to 0.91\. Other tactics
     don’t decrease the DICE score. This shows that the tactics can achieve much faster
@@ -759,21 +824,25 @@
   id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，只有当我们在策略1中将32位PyTorch模型转换为16位模型时，DICE分数从0.93略微下降到0.91。其他策略不会降低DICE分数。这表明这些策略可以在仅有微小精度损失的情况下实现更快的预测速度。
 - en: Conclusions
   id: totrans-128
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article introduces four tactics that can make vision transformer predict
     at a much faster speed by using tools such as ONNX, TensorRT and multi-threading.
   id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文介绍了四种策略，通过使用ONNX、TensorRT和多线程等工具，使视觉变换器预测速度大大提升。
 - en: Acknowledgement
   id: totrans-130
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 致谢
 - en: I would like to give a big thank you to my friend Chunyu Jin. He introduced
     me to the possibilities of fast deep learning model inferences. He made the first
     running TensorRT SwinUNETR model for me and suggested many of the tactics that
@@ -781,18 +850,23 @@
   id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 我要感谢我的朋友Chunyu Jin。他向我展示了快速深度学习模型推断的可能性。他为我制作了第一个运行的TensorRT SwinUNETR模型，并建议了我在这里尝试的许多策略。
 - en: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
     [## Join Medium with my referral link - Wei Yi'
   id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
+    [## 通过我的推荐链接加入Medium - Wei Yi'
 - en: Read every story from Wei Yi (and thousands of other writers on Medium). If
     you like my stories, please consider…
   id: totrans-133
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 阅读Wei Yi（以及Medium上的成千上万其他作者）的每一个故事。如果你喜欢我的故事，请考虑…
 - en: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
   id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: medium.com](https://medium.com/@jasonweiyi/membership?source=post_page-----dc1f09b6814--------------------------------)
