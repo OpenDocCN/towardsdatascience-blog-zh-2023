@@ -1,110 +1,160 @@
 - en: SW/HW Co-optimization Strategy for Large Language Models (LLMs)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 大型语言模型（LLMs）的软件/硬件协同优化策略
 - en: 原文：[https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629](https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629](https://towardsdatascience.com/sw-hw-co-optimization-strategy-for-large-language-models-llms-855f20a14629)
 - en: How to stretch every bit out of your system to run LLMs faster? — best practice
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何最大限度地发挥系统性能以加速运行LLMs？— 最佳实践
 - en: '[](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[![Liz
     Li](../Images/78846add1618c8c095dd97adeca87f81.png)](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
     [Liz Li](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[![Liz
+    Li](../Images/78846add1618c8c095dd97adeca87f81.png)](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)[](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
+    [Liz Li](https://medium.com/@LizLiAI?source=post_page-----855f20a14629--------------------------------)'
 - en: ·Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
     ·5 min read·Dec 16, 2023
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----855f20a14629--------------------------------)
+    ·5分钟阅读·2023年12月16日
 - en: --
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: Leading Large Language Models (LLMs) like ChatGPT, Llama, etc. are revolutionizing
     the tech industry and impacting everyone’s lives. However, their cost poses a
     significant hurdle. Applications utilizing OpenAI APIs incur substantial expenses
     for continuous operation ($0.03 per 1,000 prompt tokens and $0.06 per 1,000 sampled
     tokens).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 领先的大型语言模型（LLMs）如ChatGPT、Llama等正在革新科技行业并影响每个人的生活。然而，它们的成本构成了一个重大障碍。使用OpenAI API的应用会产生持续的高费用（每1,000个提示令牌$0.03，每1,000个采样令牌$0.06）。
 - en: To cut costs, companies tend to host their own LLMs, with expenses varying widely
     based on model size (larger LLMs with 100–200B parameters can cost ~10 times more
     compared to smaller ones with 7–15B parameters). This trend has spurred the AI
     chip race, as major tech companies aim to develop their own AI chips, reducing
     reliance on expensive hardware.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了降低成本，公司倾向于托管自己的LLMs，费用因模型大小而异（100–200B参数的大型LLMs成本约为7–15B参数的小型模型的10倍）。这一趋势催生了AI芯片竞赛，各大科技公司旨在开发自己的AI芯片，减少对昂贵硬件的依赖。
 - en: '![](../Images/c20161743022e1acac02f5a2f4dd573f.png)'
+  id: totrans-8
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c20161743022e1acac02f5a2f4dd573f.png)'
 - en: 'Trend of model size. Source: AWS reInvent'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型大小的趋势。来源：AWS reInvent
 - en: How to squeeze every bit of computing power to run LLMs? In this article, I
     am going to do a thorough analysis of LLM optimization strategy across models,
     software, and hardware. It follows the [AI SW/HW co-design methodology](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2)
     I wrote in previous article, with much more in-depth discussion on LLM-specific
     cost and performance optimization.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何挤压每一丝计算能力以运行LLMs？在这篇文章中，我将对LLM的优化策略进行深入分析，涵盖模型、软件和硬件。这将遵循我在之前文章中编写的[AI SW/HW协同设计方法论](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2)，并对LLM特有的成本和性能优化进行更深入的探讨。
 - en: '[](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
     [## How to co-design software/hardware architecture for AI/ML in a new era?'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
+    [## 如何在新时代共同设计AI/ML的软件/硬件架构？'
 - en: A holistic view of designing efficient architecture for AI/ML
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 对AI/ML高效架构设计的全面视角
 - en: towardsdatascience.com](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
     ![](../Images/da5537b614fce3903c75592dafaafb01.png)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/how-to-co-design-software-hardware-architecture-for-ai-ml-in-a-new-era-b296f2842fe2?source=post_page-----855f20a14629--------------------------------)
+    ![](../Images/da5537b614fce3903c75592dafaafb01.png)
 - en: 'Source: made by author and other colleagues'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源：作者及其他同事制作
 - en: 'The compute and memory demands of running LLM models are growing exponentially,
     while computing/memory capabilities are lagging behind on a slower trajectory,
     as depicted in the image above. To bridge this performance gap, it’s crucial to
     explore enhancements in three key areas:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行LLM模型的计算和内存需求正在呈指数级增长，而计算/内存能力却在较慢的轨迹上滞后，如上图所示。为了弥补这种性能差距，探索三个关键领域的改进是至关重要的：
 - en: '**Algorithmic Improvement and Model Compression:** How can we augment models
     with features to reduce compute and memory demands without compromising quality?
     What are the latest advancements in LLM quantization technology that reduce model
     size while maintaining quality?'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**算法改进与模型压缩：** 我们如何通过增强模型特性来减少计算和内存需求而不影响质量？最新的LLM量化技术有哪些进展，能在保持质量的同时减少模型大小？'
 - en: '**Efficient SW Stack and Acceleration Libraries:** What considerations are
     vital in constructing a software stack that seamlessly connects AI models and
     hardware? How can we expose hardware features to optimize LLM acceleration? What
     are the prevailing software challenges and potential enhancements?'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**高效的软件栈与加速库：** 在构建能够无缝连接AI模型和硬件的软件栈时，哪些考虑因素至关重要？我们如何利用硬件特性来优化LLM加速？现有的软件挑战和潜在的改进有哪些？'
 - en: '**Powerful AI HW Acceleration and Advanced Memory Hierarchy:** What are the
     contemporary hardware accelerators tailored for LLMs? How can we alleviate the
     high memory demands through potential advancements in memory hierarchy?'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**强大的AI硬件加速与先进的内存层次结构：** 当前有哪些针对LLM的硬件加速器？我们如何通过内存层次结构的潜在改进来缓解高内存需求？'
 - en: I am going to write one article for each of the above topics. Let’s dive into
     the first one (**Algorithmic Improvement and Model Compression)** in this post!
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将为上述每个主题撰写一篇文章。在这篇文章中，我们将深入探讨第一个主题（**算法改进与模型压缩**）！
 - en: LLM is based on transformer architecture (encoder-decoder), and there is decoder-only
     model architecture including Llama, ChatGPT, etc., encoder-decoder model architecture
     including Whisper, T5, etc. Emerging models are coming out each day. In this post,
     we are focusing on 4 new features below to accelerate transformer performance
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: LLM基于变换器架构（编码器-解码器），其中包括仅解码器模型架构如Llama、ChatGPT等，以及编码器-解码器模型架构如Whisper、T5等。新兴模型每天都在出现。在这篇文章中，我们将重点关注以下四个新特性来加速变换器的性能。
 - en: 1\. Quantization
+  id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 1\. 量化
 - en: Converting FP32 models to INT8 models ideally shrinks memory size by approximately
     4x, while INT4 quantization achieves around 8x model size reduction. Moreover,
     computation costs decrease significantly as integer matrix multiplication surpasses
@@ -112,146 +162,216 @@
     quantization (PTQ) and quantization-aware training (QAT). For inference, PTQ is
     recommended. Hugging Face hosts a multitude of quantized LLM models utilizing
     diverse quantization methods like GPTQ, GGUF, AWQ, among others.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 将FP32模型转换为INT8模型可以将内存大小缩小约4倍，而INT4量化则能实现大约8倍的模型大小减少。此外，整数矩阵乘法的计算成本显著降低，因为其速度超过了浮点计算。量化分为两类——后训练量化（PTQ）和量化感知训练（QAT）。对于推理，推荐使用PTQ。Hugging
+    Face托管了大量利用各种量化方法如GPTQ、GGUF、AWQ等的量化LLM模型。
 - en: '![](../Images/f93c6a15e543f030cd92879fd8a265ac.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f93c6a15e543f030cd92879fd8a265ac.png)'
 - en: 'Model size reduction through quantization. Source: [https://huggingface.co/TheBloke](https://huggingface.co/TheBloke)'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过量化实现模型大小的减少。来源：[https://huggingface.co/TheBloke](https://huggingface.co/TheBloke)
 - en: 2\. Attention Mechanism
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2\. 注意力机制
 - en: The scaled dot-product attention is notably compute-intensive, involving multiple
     matrix multiplications of keys, queries, and values. In multi-head attention,
     numerous attention layers (referred to as heads) are present, each generating
     outputs that are concatenated together.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 缩放点积注意力计算密集，涉及多次矩阵乘法键、查询和数值。在多头注意力中，存在多个注意力层（称为头），每个头生成的输出都会被拼接在一起。
 - en: '![](../Images/f4d2abf0432e671d46bc87d4d7d6724f.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f4d2abf0432e671d46bc87d4d7d6724f.png)'
 - en: 'An illustration of the scaled dot-product attention (left) and multi-head attention
     (right), which is simply multiple SDPA heads in parallel. Source: [Attention Is
     All You Need](https://arxiv.org/pdf/1706.03762.pdf) [Ref 1]'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个缩放点积注意力（左）和多头注意力（右）的示意图，多头注意力实际上是多个SDPA头并行。来源：[注意力机制就是一切](https://arxiv.org/pdf/1706.03762.pdf)
+    [参考 1]
 - en: For optimized attention inference, the concept of **multi-query attention**
     is introduced (Ref [2] [Fast Transformer Decoding](https://arxiv.org/abs/1911.02150)).
     In this approach, keys and values are shared across different attention heads,
     reducing the need for fetching new key-value pairs for each attention head and
     minimizing data transactions.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了优化注意力推理，引入了**多查询注意力**的概念（参考 [2] [快速变换器解码](https://arxiv.org/abs/1911.02150)）。在这种方法中，键和值在不同的注意力头之间共享，减少了为每个注意力头获取新键值对的需求，最小化了数据传输。
 - en: Additionally, an intermediate mechanism called **grouped-query attention** exists
     between multi-head and multi-query attention. It involves projecting keys and
     values into groups, unlike the single projection in multi-query attention. This
     method effectively reduces memory requirements while maintaining model quality.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，在多头注意力和多查询注意力之间存在一种中间机制，称为**分组查询注意力**。它涉及将键和值投影到不同的组中，这与多查询注意力中的单一投影不同。这种方法在保持模型质量的同时有效减少了内存需求。
 - en: '![](../Images/0dcb9a94d45938d773e094d8d3458eb8.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0dcb9a94d45938d773e094d8d3458eb8.png)'
 - en: '*A comparison of different attention mechanisms. Source:* [GQA: Training Generalized
     Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/pdf/2305.13245v2.pdf)
     [Ref 3]'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '*不同注意力机制的比较。来源：* [GQA: 从多头检查点训练通用多查询变换器模型](https://arxiv.org/pdf/2305.13245v2.pdf)
+    [Ref 3]'
 - en: '**Flash Attention** (Ref [[4]](https://arxiv.org/abs/2205.14135)). Unlike the
     conventional approach of computing model layers individually, Flash Attention
     employs tiling to fuse multiple layers and compute the tile to the final result
     in a single operation. The tile size is system memory hierarchy-aware, optimizing
     IO operations. The figure below demonstrates the concept and latency improvements
     of Flash Attention compared to PyTorch’s native implementation.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Flash Attention**（参考 [[4]](https://arxiv.org/abs/2205.14135)）。与传统的逐层计算方法不同，Flash
+    Attention使用平铺技术将多个层融合在一起，并在单次操作中计算出最终结果。平铺大小考虑了系统内存层次结构，优化了IO操作。下图演示了Flash Attention与PyTorch原生实现相比的概念和延迟改进。'
 - en: '![](../Images/4e51b15497beae197fc3c5d551298cff.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4e51b15497beae197fc3c5d551298cff.png)'
 - en: 'The tiled Flash Attention computation pattern and the memory hierarchy on a
     40 GB GPU. Source: [Flash Attention: Fast and Memory-Efficient Exact Attention
     with IO-Awareness](https://arxiv.org/abs/2205.14135)'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '在40 GB GPU上使用的平铺Flash注意力计算模式和内存层次结构。来源：[Flash Attention: 快速且内存高效的精确注意力与IO感知](https://arxiv.org/abs/2205.14135)'
 - en: 3\. Paged KV Cache
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 3\. 分页KV缓存
 - en: Key-value caches can become substantial with a high number of input and output
     tokens, featuring dynamic lengths that contribute to memory access inefficiencies
     due to fragmentation and redundant duplication. Drawing inspiration from the virtual
     memory mechanism in operating systems, Paged Attention aims to minimize redundancy
     in KV cache memory and facilitate flexible sharing of KV cache within and across
     requests.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着输入和输出标记数量的增加，键值缓存可能变得非常庞大，具有动态长度，这导致由于碎片化和冗余复制而造成的内存访问效率低下。受到操作系统中虚拟内存机制的启发，Paged
+    Attention旨在最小化KV缓存内存中的冗余，并促进KV缓存在请求内和跨请求的灵活共享。
 - en: '![](../Images/d0fa5c9454b399c8759cc495b812020c.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d0fa5c9454b399c8759cc495b812020c.png)'
 - en: 'Left: Parameters (gray) persist in memory and KV cache (red) that is allocated
     per serving request. Right: vLLM helps to slow down memory requirement to boost
     system throughput. Source: [Efficient Memory Management for Large Language Model
     Serving with PagedAttention](https://arxiv.org/pdf/2309.06180.pdf) [Ref 5]'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 左侧：参数（灰色）在每次服务请求中保持在内存和KV缓存（红色）中。右侧：vLLM有助于减缓内存需求以提升系统吞吐量。来源：[大语言模型服务的高效内存管理与PagedAttention](https://arxiv.org/pdf/2309.06180.pdf)
+    [Ref 5]
 - en: 4\. Speculative Sampling [Ref [6](https://arxiv.org/abs/2302.01318)]
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 4\. 推测采样 [参考 [6](https://arxiv.org/abs/2302.01318)]
 - en: In autoregressive generation models, generating a single token requires complete
     model inference, resulting in repetitive weight loading, which is time-consuming.
     Speculative sampling aims to narrow the gap between small and large models by
     delivering high-quality results akin to large models but with faster speeds similar
     to smaller models.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 在自回归生成模型中，生成单个标记需要完整的模型推理，这会导致重复的权重加载，耗时较长。推测采样旨在缩小小型模型和大型模型之间的差距，通过提供类似于大型模型的高质量结果，同时具有类似于小型模型的更快速度。
 - en: '![](../Images/b19e58ce6a4c91a22d98017097784eb8.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b19e58ce6a4c91a22d98017097784eb8.png)'
 - en: 'Significant speed up of speculative decoding with AWQ engine. Source: [In the
     Fast Lane! Speculative Decoding — 10x Larger Model, No Extra Cost](https://medium.com/@TitanML/in-the-fast-lane-speculative-decoding-10x-larger-model-no-extra-cost-f33ea39d065a#:~:text=Speculative%20decoding%20introduces%20an%20innovative,plenty%20more%20room%20for%20improvement.)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: AWQ 引擎显著加快了猜测性解码的速度。来源：[在快速车道上！猜测性解码 — 10 倍更大的模型，无额外成本](https://medium.com/@TitanML/in-the-fast-lane-speculative-decoding-10x-larger-model-no-extra-cost-f33ea39d065a#:~:text=Speculative%20decoding%20introduces%20an%20innovative,plenty%20more%20room%20for%20improvement.)
 - en: Beyond the aforementioned four major inference acceleration techniques from
     an algorithm and model perspective, numerous other features exist to expedite
     LLM model inference. These include model/tensor parallelism, model sparsity, knowledge
     distillation, and more, with new research emerging regularly. Leveraging these
     techniques is crucial to accelerate LLM solutions.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了从算法和模型的角度提到的四大推理加速技术，还有许多其他特性可以加速 LLM 模型的推理。这些包括模型/张量并行、模型稀疏性、知识蒸馏等，新的研究也在不断涌现。利用这些技术对加速
+    LLM 解决方案至关重要。
 - en: It’s essential to note that optimizing AI workloads always involves a synergy
     of model, software, and hardware considerations. In upcoming posts, we’ll dive
     into the software stack/libraries and hardware architecture aspects for LLM acceleration,
     please stay tuned!
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要注意的是，优化 AI 工作负载总是涉及模型、软件和硬件方面的协同。在即将发布的文章中，我们将深入探讨 LLM 加速的软件栈/库和硬件架构方面，敬请关注！
 - en: Reference
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Ashish Vaswani et al, [Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf),
     NIPS 2017, Long Beach, CA'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Ashish Vaswani 等人，[注意力即你所需](https://arxiv.org/pdf/1706.03762.pdf)，NIPS
+    2017，加州长滩'
 - en: '[2] Noam Shazeer, [Fast Transformer Decoding: One Write-Head is All You Need](https://arxiv.org/abs/1911.02150),
     2019, arvix'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Noam Shazeer，[快速 Transformer 解码：一个写头就足够](https://arxiv.org/abs/1911.02150)，2019，arxiv'
 - en: '[3] Joshua Ainslie et al, [GQA: Training Generalized Multi-Query Transformer
     Models from Multi-Head Checkpoints](https://arxiv.org/pdf/2305.13245v2.pdf), 2023'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Joshua Ainslie 等人，[GQA：从多头检查点训练通用多查询 Transformer 模型](https://arxiv.org/pdf/2305.13245v2.pdf)，2023'
 - en: '[4] Tri Dao et al, [Flash Attention: Fast and Memory-Efficient Exact Attention
     with IO-Awareness](https://arxiv.org/abs/2205.14135), 2022, arvix'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Tri Dao 等人，[Flash Attention：具有 IO 感知的快速且内存高效的精确注意力](https://arxiv.org/abs/2205.14135)，2022，arxiv'
 - en: '[5] Woosuk Kwon et al, [Efficient Memory Management for Large Language Model
     Serving with PagedAttention](https://arxiv.org/pdf/2309.06180.pdf), 2023, arvix'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Woosuk Kwon 等人，[大语言模型服务的高效内存管理与 PagedAttention](https://arxiv.org/pdf/2309.06180.pdf)，2023，arxiv'
 - en: '[6] Charlie Chen et al, [Accelerating Large Language Model Decoding with Speculative
     Sampling](https://arxiv.org/abs/2302.01318), 2023, arvix'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Charlie Chen 等人，[使用猜测性采样加速大语言模型解码](https://arxiv.org/abs/2302.01318)，2023，arxiv'
